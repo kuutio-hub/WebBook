@@ -17,7 +17,7 @@ export function renderReader(book) {
     <div id="loader" class="absolute inset-0 bg-white bg-opacity-80 flex items-center justify-center z-50">
       ${ICONS.spinner}
     </div>
-    <header id="reader-header" class="flex justify-between items-center p-2 shadow-md z-20">
+    <header id="reader-header" class="flex justify-between items-center p-2 shadow-md z-20 flex-shrink-0">
        <button id="close-reader-btn" class="p-2 rounded-full hover:bg-gray-500/20 transition-colors">
           ${ICONS.arrowLeft}
       </button>
@@ -67,6 +67,8 @@ export function renderReader(book) {
         'text-align': `${settings.textAlign} !important`,
         'padding': `calc(${settings.paddingY}rem + env(safe-area-inset-top)) calc(${settings.paddingX}rem + env(safe-area-inset-right)) calc(${settings.paddingY}rem + env(safe-area-inset-bottom)) calc(${settings.paddingX}rem + env(safe-area-inset-left))`,
         'word-wrap': 'break-word',
+        'height': '100% !important', // Ensure body fills the iframe
+        'box-sizing': 'border-box',
       },
        'a': {
          'color': 'inherit !important',
@@ -78,33 +80,55 @@ export function renderReader(book) {
         'height': 'auto !important',
         'display': 'block',
         'margin': '1em auto',
+        'pointer-events': 'none', // Prevents image from capturing scroll events
       },
     });
     rendition.themes.select('custom');
   };
   
   const handleSettingsChange = async (newSettings) => {
-    const isViewModeChanging = newSettings.viewMode && newSettings.viewMode !== settings.viewMode;
+    const oldViewMode = settings.viewMode;
     settings = { ...settings, ...newSettings };
     await saveSettings(settings);
     
-    if (isViewModeChanging) {
-      // Re-render the whole reader view if view mode changes (from settings panel)
-      window.dispatchEvent(new CustomEvent('openBook', { detail: { book } }));
+    // Check if view mode really changed
+    if (newSettings.viewMode && newSettings.viewMode !== oldViewMode) {
+      const controlsPanel = container.querySelector('#controls-panel');
+      if (controlsPanel) controlsPanel.classList.add('hidden');
+      loader.style.display = 'flex'; // Show loader during reload
+      
+      // Give UI time to update before blocking with reload
+      setTimeout(() => {
+        window.dispatchEvent(new CustomEvent('openBook', { detail: { book } }));
+      }, 50);
     } else {
       applyTheme();
     }
   };
+  
+  const handleKeydown = (e) => {
+      if (!settings.enableKeyboardNav) return;
+      
+      const isPaginated = rendition.manager.name === 'default';
+      if (isPaginated) {
+        if (e.key === 'ArrowLeft') {
+            rendition.prev();
+        } else if (e.key === 'ArrowRight') {
+            rendition.next();
+        }
+      }
+  };
 
   const initReader = async () => {
     settings = await getSettings();
+    document.addEventListener('keydown', handleKeydown);
+    
     container.style.backgroundColor = settings.backgroundColor;
     header.style.color = settings.textColor;
     
     epubBook = ePub(book.file);
 
     const isWideScreen = window.innerWidth >= 1024;
-    // On wide screens, force paginated view for book-like experience.
     const effectiveViewMode = isWideScreen ? 'paginated' : settings.viewMode;
 
     const renditionOptions = {
@@ -112,7 +136,6 @@ export function renderReader(book) {
         height: "100%",
         flow: effectiveViewMode === 'scroll' ? 'scrolled-doc' : 'paginated',
         manager: effectiveViewMode === 'scroll' ? 'continuous' : 'default',
-        // 'auto' enables two-page spread when container is wide enough
         spread: isWideScreen ? 'auto' : 'none', 
     };
 
@@ -144,9 +167,8 @@ export function renderReader(book) {
         onTocSelect: (href) => rendition.display(href),
     }));
     
-    paginationControls.innerHTML = ''; // Clear old controls
+    paginationControls.innerHTML = '';
     if (effectiveViewMode === 'paginated') {
-      // In wide-screen book mode, click areas cover half the screen.
       const prevBtnWidth = isWideScreen ? 'w-1/2' : 'w-1/5';
       const nextBtnWidth = isWideScreen ? 'w-1/2' : 'w-1/5';
       paginationControls.innerHTML = `
@@ -161,21 +183,25 @@ export function renderReader(book) {
   const toggleFullScreen = () => {
     if (!document.fullscreenElement) {
         document.documentElement.requestFullscreen();
-        fullscreenBtn.innerHTML = ICONS.fullscreenExit;
-    } else {
-        if (document.exitFullscreen) {
-            document.exitFullscreen();
-            fullscreenBtn.innerHTML = ICONS.fullscreen;
-        }
+    } else if (document.exitFullscreen) {
+        document.exitFullscreen();
     }
   };
 
-  document.addEventListener('fullscreenchange', () => {
+  const onFullScreenChange = () => {
     fullscreenBtn.innerHTML = document.fullscreenElement ? ICONS.fullscreenExit : ICONS.fullscreen;
-  });
+  };
+  
+  const cleanup = () => {
+      epubBook?.destroy();
+      document.removeEventListener('keydown', handleKeydown);
+      document.removeEventListener('fullscreenchange', onFullScreenChange);
+  };
+
+  document.addEventListener('fullscreenchange', onFullScreenChange);
 
   container.querySelector('#close-reader-btn').addEventListener('click', () => {
-    epubBook?.destroy();
+    cleanup();
     window.dispatchEvent(new CustomEvent('closeReader'));
   });
   

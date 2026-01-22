@@ -13,13 +13,17 @@
     <script src="https://cdn.jsdelivr.net/npm/epubjs/dist/epub.min.js"></script>
     <script src="https://unpkg.com/hypher@0.2.5/dist/hypher.js"></script>
     <script src="https://unpkg.com/hyphenation.hu@0.2.1/dist/hyphenation.hu.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <script>
+      // A pdf.js worker forrasanak beallitasa
+      if (typeof pdfjsLib !== 'undefined') {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+      }
+    </script>
     <link rel="stylesheet" href="style.css">
   </head>
   <body class="bg-gray-100 text-gray-800 flex flex-col min-h-screen">
     <main id="root" class="flex-grow"></main>
-    <footer class="w-full text-center p-4 bg-gray-200 text-gray-600 text-sm flex-shrink-0">
-      <span id="footer-text"></span>
-    </footer>
     <script type="module" src="index.js"></script>
   </body>
 </html>

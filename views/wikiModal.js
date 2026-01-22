@@ -21,7 +21,7 @@ export function renderWikiModal() {
             <h4>Fő Funkciók</h4>
             <ul>
                 <li><strong>Könyv Feltöltése:</strong> Kattints a "Feltöltés" gombra, és válaszd ki a számítógépedről a beolvasni kívánt könyvet.</li>
-                <li><strong>Támogatott Formátum:</strong> Az alkalmazás jelenleg a <strong>.EPUB</strong> formátumot támogatja, ami a legelterjedtebb e-könyv szabvány.</li>
+                <li><strong>Támogatott Formátumok:</strong> Az alkalmazás jelenleg a <strong>.EPUB</strong> és <strong>.PDF</strong> formátumokat támogatja. A .mobi és .prc formátumok feltöltése lehetséges, de olvasásuk még nem támogatott.</li>
                 <li><strong>Könyvtár:</strong> A feltöltött könyveid borítói megjelennek a főoldalon. Egy borítóra kattintva megtekintheted a könyv adatait, vagy elindíthatod az olvasást.</li>
                 <li><strong>Adatvédelem:</strong> A könyveid sosem hagyják el a gépedet. Az alkalmazás az IndexedDB nevű böngészőtechnológiát használja a biztonságos, helyi tároláshoz.</li>
             </ul>
@@ -30,18 +30,17 @@ export function renderWikiModal() {
             <p>Az olvasó felületet úgy terveztük, hogy a lehető legkényelmesebb legyen.</p>
             <ul>
                 <li><strong>Automatikus Mentés:</strong> Az olvasási pozíciód automatikusan mentésre kerül, így bármikor ott folytathatod, ahol abbahagytad.</li>
-                <li><strong>Kétpaneles "Könyv" Nézet:</strong> Nagyobb képernyőkön (pl. monitoron vagy fektetett tableten) az olvasó automatikusan kétoldalas nézetre vált, imitálva egy valódi könyvet. Ebben a módban az oldalak szélére kattintva lapozhatsz.</li>
-                <li><strong>Egypaneles Nézet:</strong> Kisebb képernyőkön (pl. telefonon) az olvasó egyetlen, görgethető vagy lapozható oszlopban jelenik meg.</li>
+                <li><strong>Billentyűzet-navigáció:</strong> A bal és jobb nyílbillentyűkkel lapozhatsz az oldalak között. Ez a funkció a beállításokban kikapcsolható.</li>
+                <li><strong>Adaptív Elrendezés:</strong> Nagy képernyőn az EPUB könyvek kétoldalas, "könyv-szerű" nézetben jelennek meg. Kisebb eszközökön az alkalmazás egyoszlopos nézetre vált.</li>
             </ul>
 
-            <h4>Személyre Szabás</h4>
-            <p>Az olvasó nézetben a fogaskerék ikonra kattintva rengeteg beállítási lehetőséget találsz:</p>
+            <h4>Személyre Szabás (EPUB olvasó)</h4>
+            <p>Az olvasó nézetben a fogaskerék ikonra kattintva rengeteg beállítási lehetőséget találsz (a legtöbb csak EPUB könyveknél érhető el):</p>
             <ul>
-                <li><strong>Betűméret és -típus:</strong> Állítsd be a neked kényelmes méretet és válassz a beépített, olvasáshoz optimalizált betűtípusok közül.</li>
-                <li><strong>Színsémák és Háttérminták:</strong> Válassz előre definiált színpaletták (pl. Solarized, Nord, papír) és finom háttérminták közül.</li>
+                <li><strong>Színek:</strong> Válassz előre beállított színsémák közül, vagy állítsd be külön a háttér és a szöveg színét a színválasztó segítségével.</li>
+                <li><strong>Betűtípus és -méret:</strong> Állítsd be a neked kényelmes méretet és válassz a beépített, olvasáshoz optimalizált betűtípusok közül.</li>
                 <li><strong>Margók:</strong> Állítsd be a függőleges és vízszintes margókat, hogy a szöveg ne lógjon be a képernyő szélein lévő kameraszigetek (notch) vagy más elemek alá.</li>
                 <li><strong>Nézet Mód:</strong> Válassz a folyamatos <strong>görgetés</strong> és a klasszikus <strong>lapozás</strong> között (kisebb képernyőkön).</li>
-                <li><strong>Téma (Sötét/Világos):</strong> A főoldalon lévő ikonokkal válthatsz világos, sötét és rendszer-alapú (automatikus) téma között.</li>
             </ul>
         </div>
          <footer class="p-4 border-t dark:border-gray-700 text-right flex-shrink-0">

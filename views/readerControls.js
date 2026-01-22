@@ -63,21 +63,21 @@ export function renderReaderControls({ settings, onSettingsChange, toc, onTocSel
                 </div>
             </div>
             <div>
-                <label class="block text-sm font-medium mb-2">Igazítás</label>
-                <div class="grid grid-cols-4 gap-2">
-                    ${(['text-left', 'text-center', 'text-right', 'text-justify'].map(align => `
-                        <button data-setting="textAlign" data-value="${align}" class="p-2 rounded-md border ${settings.textAlign === align ? 'bg-indigo-100 dark:bg-indigo-900 border-indigo-500' : 'hover:bg-gray-100 dark:hover:bg-gray-700'}">
-                            ${ICONS[align.replace('text-','')] || ''}
-                        </button>
-                    `).join(''))}
-                </div>
-            </div>
-            <div>
-                <label class="block text-sm font-medium mb-2">Színséma</label>
-                <div class="grid grid-cols-4 gap-2">
+                <label class="block text-sm font-medium mb-2">Színek</label>
+                <div class="grid grid-cols-4 gap-2 mb-4">
                     ${COLOR_PALETTES.map(palette => `
-                        <button data-setting="colors" data-bg="${palette.bg}" data-text="${palette.text}" class="h-12 w-full rounded-md border-2 ${settings.backgroundColor === palette.bg ? 'border-indigo-500' : 'border-transparent'}" style="background-color: ${palette.bg}" title="${palette.name}"></button>
+                        <button data-setting="colors" data-bg="${palette.bg}" data-text="${palette.text}" class="h-10 w-full rounded-md border-2 ${settings.backgroundColor === palette.bg ? 'border-indigo-500' : 'border-transparent'}" style="background-color: ${palette.bg}" title="${palette.name}"></button>
                     `).join('')}
+                </div>
+                <div class="flex items-center justify-between space-x-4">
+                    <div class="flex items-center space-x-2">
+                         <input type="color" data-setting="backgroundColor" value="${settings.backgroundColor}" class="w-8 h-8 p-0 border-none rounded-md cursor-pointer" title="Háttérszín">
+                         <label class="text-sm">Háttér</label>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                         <input type="color" data-setting="textColor" value="${settings.textColor}" class="w-8 h-8 p-0 border-none rounded-md cursor-pointer" title="Betűszín">
+                         <label class="text-sm">Szöveg</label>
+                    </div>
                 </div>
             </div>
             <div>
@@ -89,12 +89,21 @@ export function renderReaderControls({ settings, onSettingsChange, toc, onTocSel
                 </div>
             </div>
             <div>
+                <label class="block text-sm font-medium mb-2">Vezérlés</label>
+                <div class="flex items-center justify-between bg-gray-100 dark:bg-gray-700/50 p-2 rounded-lg">
+                    <label for="keyboard-nav" class="text-sm">Billentyűzet-navigáció</label>
+                    <button id="keyboard-nav" data-setting="enableKeyboardNav" class="relative inline-flex items-center h-6 rounded-full w-11 transition-colors ${settings.enableKeyboardNav ? 'bg-indigo-600' : 'bg-gray-300 dark:bg-gray-600'}">
+                        <span class="inline-block w-4 h-4 transform bg-white rounded-full transition-transform ${settings.enableKeyboardNav ? 'translate-x-6' : 'translate-x-1'}"></span>
+                    </button>
+                </div>
+            </div>
+            <div>
                 <label class="block text-sm font-medium mb-2">Nézet</label>
                 <div class="flex bg-gray-200 dark:bg-gray-700 rounded-lg p-1">
                     <button data-setting="viewMode" data-value="scroll" class="flex-1 p-2 text-sm rounded-md transition-colors ${settings.viewMode === 'scroll' ? 'bg-white dark:bg-gray-900 shadow' : ''}">Görgetés</button>
                     <button data-setting="viewMode" data-value="paginated" class="flex-1 p-2 text-sm rounded-md transition-colors ${settings.viewMode === 'paginated' ? 'bg-white dark:bg-gray-900 shadow' : ''}">Lapozás</button>
                 </div>
-                <p class="text-xs text-gray-500 mt-2">A nézet váltásához újra be kell tölteni a könyvet. Nagy képernyőn a lapozás automatikus.</p>
+                <p class="text-xs text-gray-500 mt-2 flex items-start"><span class="mr-1 mt-0.5">${ICONS.info}</span><span>A nézet váltása újratölti a könyvet. Nagy képernyőn a lapozás automatikus.</span></p>
             </div>
         </div>
     `;
@@ -113,13 +122,8 @@ export function renderReaderControls({ settings, onSettingsChange, toc, onTocSel
     
     container.addEventListener('click', (e) => {
         const target = e.target.closest('[data-action="close"], [data-tab], [data-setting], [data-href]');
-
-        if (!target && e.target === container) {
-            container.classList.add('hidden');
-            return;
-        }
-        
-        if (!target) return;
+        if (!target && e.target.closest('[data-panel-content]')) return; // Click inside panel content, but not on a button
+        if (!target) { container.classList.add('hidden'); return; }
         
         e.stopPropagation();
 
@@ -140,8 +144,17 @@ export function renderReaderControls({ settings, onSettingsChange, toc, onTocSel
                 case 'colors':
                     changes = { backgroundColor: bg, textColor: text };
                     break;
+                case 'enableKeyboardNav':
+                    changes = { enableKeyboardNav: !settings.enableKeyboardNav };
+                    break;
             }
             onSettingsChange(changes);
+            if (setting === 'enableKeyboardNav' || setting === 'colors') {
+                // Re-render controls to update UI state
+                const currentScroll = container.querySelector('.overflow-y-auto').scrollTop;
+                render();
+                container.querySelector('.overflow-y-auto').scrollTop = currentScroll;
+            }
         } else if (target.dataset.href) {
             onTocSelect(target.dataset.href);
             container.classList.add('hidden');
@@ -153,6 +166,8 @@ export function renderReaderControls({ settings, onSettingsChange, toc, onTocSel
         const setting = target.dataset.setting;
         if(setting === 'fontSize' || setting === 'paddingX' || setting === 'paddingY') {
             onSettingsChange({ [setting]: parseFloat(target.value) });
+        } else if (setting === 'backgroundColor' || setting === 'textColor') {
+            onSettingsChange({ [setting]: target.value });
         }
     });
 

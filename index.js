@@ -1,7 +1,7 @@
 
 import { renderLibrary } from './views/library.js';
 import { renderReader } from './views/reader.js';
-import { APP_NAME, APP_VERSION } from './constants.js';
+import { renderPdfReader } from './views/pdfReader.js';
 import { initTheme } from './services/themeService.js';
 
 const root = document.getElementById('root');
@@ -20,7 +20,11 @@ function render() {
   if (state.currentView === 'library') {
     root.appendChild(renderLibrary());
   } else if (state.currentView === 'reader' && state.selectedBook) {
-    root.appendChild(renderReader(state.selectedBook));
+    if (state.selectedBook.type === 'pdf') {
+        root.appendChild(renderPdfReader(state.selectedBook));
+    } else {
+        root.appendChild(renderReader(state.selectedBook));
+    }
   }
 }
 
@@ -37,17 +41,8 @@ window.addEventListener('closeReader', () => {
   render();
 });
 
-function initFooter() {
-    const footerText = document.getElementById('footer-text');
-    if(footerText) {
-        const currentYear = new Date().getFullYear();
-        footerText.textContent = `© ${currentYear} ${APP_NAME} - Verzió: ${APP_VERSION}`;
-    }
-}
-
 // Initial load
 document.addEventListener('DOMContentLoaded', () => {
   initTheme();
   render();
-  initFooter();
 });

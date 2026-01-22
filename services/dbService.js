@@ -70,15 +70,23 @@ export const getBooks = () => {
 export const deleteBook = (id) => {
   return new Promise(async (resolve, reject) => {
     const db = await initDB();
-    const transaction = db.transaction([BOOKS_STORE_NAME, PROGRESS_STORE_NAME], 'readwrite');
-    const booksStore = transaction.objectStore(BOOKS_STORE_NAME);
-    const progressStore = transaction.objectStore(PROGRESS_STORE_NAME);
+    // Using separate transactions for clarity, though one would work
+    const bookTx = db.transaction(BOOKS_STORE_NAME, 'readwrite');
+    const bookStore = bookTx.objectStore(BOOKS_STORE_NAME);
+    const bookDeleteRequest = bookStore.delete(id);
     
-    booksStore.delete(id);
-    progressStore.delete(id);
+    bookDeleteRequest.onerror = () => reject('Error deleting book entry');
+
+    const progressTx = db.transaction(PROGRESS_STORE_NAME, 'readwrite');
+    const progressStore = progressTx.objectStore(PROGRESS_STORE_NAME);
+    const progressDeleteRequest = progressStore.delete(id);
     
-    transaction.oncomplete = () => resolve();
-    transaction.onerror = () => reject('Error deleting book');
+    progressDeleteRequest.onerror = () => reject('Error deleting book progress');
+
+    Promise.all([
+        new Promise(res => bookTx.oncomplete = res),
+        new Promise(res => progressTx.oncomplete = res)
+    ]).then(() => resolve()).catch(reject);
   });
 };
 
@@ -91,8 +99,10 @@ export const getSettings = () => {
     
     request.onsuccess = () => {
         if(request.result){
-            const {id, ...settings} = request.result;
-            resolve(settings);
+            // Merge defaults with saved settings to ensure new settings are applied
+            const savedSettings = { ...DEFAULT_SETTINGS, ...request.result };
+            delete savedSettings.id;
+            resolve(savedSettings);
         } else {
             resolve(DEFAULT_SETTINGS);
         }
@@ -121,18 +131,24 @@ export const getProgress = (bookId) => {
     const request = store.get(bookId);
     
     request.onsuccess = () => {
-        resolve(request.result ? request.result.cfi : null);
+        resolve(request.result ? (request.result.cfi || request.result.page) : null);
     }
     request.onerror = () => reject('Error getting progress');
   });
 };
 
-export const saveProgress = (bookId, cfi) => {
+export const saveProgress = (bookId, progress) => {
   return new Promise(async (resolve, reject) => {
     const db = await initDB();
     const transaction = db.transaction(PROGRESS_STORE_NAME, 'readwrite');
     const store = transaction.objectStore(PROGRESS_STORE_NAME);
-    store.put({ bookId, cfi });
+    const data = { bookId };
+    if (typeof progress === 'string') {
+        data.cfi = progress;
+    } else {
+        data.page = progress;
+    }
+    store.put(data);
     
     transaction.oncomplete = () => resolve();
     transaction.onerror = () => reject('Error saving progress');

@@ -1,6 +1,6 @@
 
 export const APP_NAME = 'Web E-book Olvasó';
-export const APP_VERSION = '1.3.0.0';
+export const APP_VERSION = '1.4.0.0';
 
 export const DB_NAME = 'WebEbookReaderDB';
 export const DB_VERSION = 1;
@@ -14,12 +14,13 @@ export const DEFAULT_SETTINGS = {
   lineHeight: 1.6,
   letterSpacing: 0.01, // em
   textAlign: 'text-justify',
-  backgroundColor: '#fdf6e3', // Solarized Light
-  textColor: '#657b83', // Solarized Base00
+  backgroundColor: '#fdf6e3', // Solarized Light BG
+  textColor: '#657b83', // Solarized Light Text
   backgroundPattern: 'none',
   paddingX: 2.5, // rem, horizontal padding
   paddingY: 2.0, // rem, vertical padding
   viewMode: 'scroll',
+  enableKeyboardNav: true,
 };
 
 export const FONT_FAMILIES = [
@@ -38,7 +39,7 @@ export const COLOR_PALETTES = [
   { name: 'Gruvbox Light', bg: '#fbf1c7', text: '#3c3836' },
   { name: 'Gruvbox Dark', bg: '#282828', text: '#ebdbb2' },
   { name: 'Nord', bg: '#eceff4', text: '#2e3440' },
-  { name: 'Dracula', bg: '#282a36', text: '#f8f8f2' },
+  { name: 'Dracula', bg: '#282a36', text: '#f8f82' },
   { name: 'Classic Paper', bg: '#f5f5dc', text: '#363636' },
   { name: 'Night Reader', bg: '#121212', text: '#b3b3b3' },
 ];
