@@ -2,6 +2,7 @@
 import { renderLibrary } from './views/library.js';
 import { renderReader } from './views/reader.js';
 import { APP_NAME, APP_VERSION } from './constants.js';
+import { initTheme } from './services/themeService.js';
 
 const root = document.getElementById('root');
 
@@ -46,6 +47,7 @@ function initFooter() {
 
 // Initial load
 document.addEventListener('DOMContentLoaded', () => {
+  initTheme();
   render();
   initFooter();
 });

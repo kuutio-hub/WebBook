@@ -1,6 +1,6 @@
 
 export const APP_NAME = 'Web E-book Olvasó';
-export const APP_VERSION = '1.1.0.2';
+export const APP_VERSION = '1.2.0.0';
 
 export const DB_NAME = 'WebEbookReaderDB';
 export const DB_VERSION = 1;

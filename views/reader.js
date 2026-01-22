@@ -72,7 +72,13 @@ export function renderReader(book) {
          'color': 'inherit !important',
          'text-decoration': 'underline !important',
        },
-       'p': {'margin-bottom': '1em'}
+       'p': {'margin-bottom': '1em'},
+       'img': {
+        'max-width': '100%',
+        'height': 'auto !important',
+        'display': 'block',
+        'margin': '1em auto',
+      },
     });
     rendition.themes.select('custom');
   };
