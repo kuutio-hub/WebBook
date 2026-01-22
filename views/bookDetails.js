@@ -20,9 +20,13 @@ export function renderBookDetailsModal(book) {
             ${book.description || '<p>Nincs elérhető leírás.</p>'}
           </div>
         </div>
-        <div class="flex-shrink-0 flex items-center justify-end space-x-4 mt-6">
+        <div class="flex-shrink-0 flex flex-wrap items-center justify-end gap-2 mt-6">
           <button data-action="close" class="px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-200 bg-gray-200 dark:bg-gray-700 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
             Bezárás
+          </button>
+          <button data-action="download" class="px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-200 bg-gray-200 dark:bg-gray-700 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors flex items-center">
+            ${ICONS.download}
+            <span class="ml-2">Letöltés</span>
           </button>
           <button data-action="read" class="px-6 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-md hover:bg-indigo-700 transition-colors flex items-center disabled:bg-gray-400 disabled:cursor-not-allowed" ${!isReadable ? 'disabled' : ''} title="${!isReadable ? 'Ez a formátum jelenleg nem olvasható' : ''}">
             ${ICONS.bookOpen}
@@ -34,6 +38,19 @@ export function renderBookDetailsModal(book) {
   `;
 
   const closeModal = () => modalWrapper.remove();
+
+  const handleDownload = () => {
+    const mimeType = book.type === 'pdf' ? 'application/pdf' : 'application/epub+zip';
+    const blob = new Blob([book.file], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${book.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.${book.type}`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
   
   modalWrapper.addEventListener('click', (e) => {
     if (e.target === modalWrapper) {
@@ -42,6 +59,7 @@ export function renderBookDetailsModal(book) {
   });
 
   modalWrapper.querySelector('[data-action="close"]').addEventListener('click', closeModal);
+  modalWrapper.querySelector('[data-action="download"]').addEventListener('click', handleDownload);
 
   modalWrapper.querySelector('[data-action="read"]').addEventListener('click', () => {
     if(isReadable) {

@@ -4,6 +4,7 @@ import { extractMetadata } from '../services/epubService.js';
 import { extractPdfMetadata } from '../services/pdfService.js';
 import { renderBookDetailsModal } from './bookDetails.js';
 import { renderWikiModal } from './wikiModal.js';
+import { renderConverterModal } from './converterModal.js';
 import { ICONS } from './icons.js';
 import { toggleTheme } from '../services/themeService.js';
 import { APP_NAME, APP_VERSION } from '../constants.js';
@@ -48,15 +49,27 @@ export function renderLibrary() {
       © ${currentYear} ${APP_NAME} - Verzió: ${APP_VERSION}
     </footer>
     <div id="modal-container"></div>
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50"></div>
   `;
 
   const bookGrid = container.querySelector('#book-grid');
   const modalContainer = container.querySelector('#modal-container');
   const themeToggleBtn = container.querySelector('#theme-toggle-btn');
+  const toastContainer = container.querySelector('#toast-container');
   const fileInput = document.createElement('input');
   fileInput.type = 'file';
   fileInput.accept = '.epub,.pdf,.mobi,.prc';
   fileInput.className = 'hidden';
+
+  const showToast = (message) => {
+    const toast = document.createElement('div');
+    toast.className = "bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg animate-fade-in-out";
+    toast.textContent = message;
+    toastContainer.appendChild(toast);
+    setTimeout(() => toast.remove(), 4000);
+  };
+  
+  window.addEventListener('showToast', (e) => showToast(e.detail.message));
 
   const updateThemeButton = (theme) => {
     if (theme === 'system') themeToggleBtn.innerHTML = ICONS.desktop;
@@ -81,13 +94,18 @@ export function renderLibrary() {
 
     const extension = file.name.split('.').pop()?.toLowerCase();
     
-    if (!['epub', 'pdf', 'mobi', 'prc'].includes(extension)) {
-      alert('Kérlek, egy támogatott formátumú (.epub, .pdf) fájlt válassz ki.');
-      return;
-    }
-    
     if (['mobi', 'prc'].includes(extension)) {
-        alert('A .mobi és .prc formátumok feltölthetők, de a megnyitásuk jelenleg nem támogatott. Dolgozunk a megoldáson!');
+        modalContainer.innerHTML = '';
+        const converterModal = renderConverterModal(file.name);
+        modalContainer.appendChild(converterModal);
+        fileInput.value = ""; // Reset input
+        return;
+    }
+
+    if (!['epub', 'pdf'].includes(extension)) {
+      alert('Kérlek, egy támogatott formátumú (.epub, .pdf) fájlt válassz ki.');
+      fileInput.value = "";
+      return;
     }
 
     const heroButton = container.querySelector('#upload-btn-hero');
@@ -102,8 +120,6 @@ export function renderLibrary() {
         metadata = await extractMetadata(fileBuffer);
       } else if (extension === 'pdf') {
         metadata = await extractPdfMetadata(fileBuffer, file.name);
-      } else {
-        metadata = { title: file.name, author: "Ismeretlen", coverUrl: null, description: null };
       }
       
       await addBook({ ...metadata, file: fileBuffer, type: extension });

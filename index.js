@@ -45,4 +45,22 @@ window.addEventListener('closeReader', () => {
 document.addEventListener('DOMContentLoaded', () => {
   initTheme();
   render();
+
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js').then(registration => {
+        console.log('ServiceWorker registration successful with scope: ', registration.scope);
+        if (registration.installing) {
+            registration.installing.addEventListener('statechange', (e) => {
+                if(e.target.state === 'installed') {
+                    const event = new CustomEvent('showToast', { detail: { message: 'Az alkalmazás telepítve lett, már offline is működik!' }});
+                    window.dispatchEvent(event);
+                }
+            });
+        }
+      }).catch(err => {
+        console.log('ServiceWorker registration failed: ', err);
+      });
+    });
+  }
 });
