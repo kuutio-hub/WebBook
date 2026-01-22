@@ -1,0 +1,5 @@
+{
+  "name": "Web E-book Olvasó",
+  "description": "Egy böngésző alapú e-könyv olvasó, amely helyben, a böngésződben tárolja a könyvtáradat és az olvasási folyamatodat. Tölts fel EPUB fájlokat és szabd személyre az olvasási élményt.",
+  "requestFramePermissions": []
+}
