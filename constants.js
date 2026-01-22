@@ -1,6 +1,6 @@
 
 export const APP_NAME = 'Web E-book Olvasó';
-export const APP_VERSION = '1.2.0.0';
+export const APP_VERSION = '1.3.0.0';
 
 export const DB_NAME = 'WebEbookReaderDB';
 export const DB_VERSION = 1;
@@ -17,6 +17,8 @@ export const DEFAULT_SETTINGS = {
   backgroundColor: '#fdf6e3', // Solarized Light
   textColor: '#657b83', // Solarized Base00
   backgroundPattern: 'none',
+  paddingX: 2.5, // rem, horizontal padding
+  paddingY: 2.0, // rem, vertical padding
   viewMode: 'scroll',
 };
 

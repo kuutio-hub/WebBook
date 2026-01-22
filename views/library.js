@@ -2,6 +2,7 @@
 import { getBooks, addBook, deleteBook } from '../services/dbService.js';
 import { extractMetadata } from '../services/epubService.js';
 import { renderBookDetailsModal } from './bookDetails.js';
+import { renderWikiModal } from './wikiModal.js';
 import { ICONS } from './icons.js';
 import { toggleTheme } from '../services/themeService.js';
 import { APP_NAME } from '../constants.js';
@@ -14,6 +15,9 @@ export function renderLibrary() {
     <header class="p-4 sm:p-6 flex justify-between items-center">
         <h1 class="text-xl font-bold font-serif">${APP_NAME}</h1>
         <div class="flex items-center space-x-2">
+            <button id="wiki-btn" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors" aria-label="Súgó">
+                ${ICONS.help}
+            </button>
             <button id="theme-toggle-btn" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors" aria-label="Téma váltása"></button>
             <button id="upload-btn-header" class="px-4 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-md hover:bg-indigo-700 transition-colors hidden sm:flex items-center">
                 ${ICONS.upload}
@@ -156,6 +160,12 @@ export function renderLibrary() {
     updateThemeButton(newTheme);
   });
   
+  container.querySelector('#wiki-btn').addEventListener('click', () => {
+    modalContainer.innerHTML = '';
+    const wikiModal = renderWikiModal();
+    modalContainer.appendChild(wikiModal);
+  });
+
   container.querySelector('#upload-btn-header').addEventListener('click', () => fileInput.click());
   container.querySelector('#upload-btn-hero').addEventListener('click', () => fileInput.click());
   fileInput.addEventListener('change', handleFileChange);

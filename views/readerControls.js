@@ -50,6 +50,19 @@ export function renderReaderControls({ settings, onSettingsChange, toc, onTocSel
                 </select>
             </div>
             <div>
+                <label class="block text-sm font-medium mb-2">Margók</label>
+                <div class="space-y-3">
+                    <div>
+                        <label for="padding-x" class="text-xs text-gray-500">Vízszintes</label>
+                        <input id="padding-x" type="range" data-setting="paddingX" min="0" max="8" step="0.25" value="${settings.paddingX}" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"/>
+                    </div>
+                     <div>
+                        <label for="padding-y" class="text-xs text-gray-500">Függőleges</label>
+                        <input id="padding-y" type="range" data-setting="paddingY" min="0" max="8" step="0.25" value="${settings.paddingY}" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"/>
+                    </div>
+                </div>
+            </div>
+            <div>
                 <label class="block text-sm font-medium mb-2">Igazítás</label>
                 <div class="grid grid-cols-4 gap-2">
                     ${(['text-left', 'text-center', 'text-right', 'text-justify'].map(align => `
@@ -81,7 +94,7 @@ export function renderReaderControls({ settings, onSettingsChange, toc, onTocSel
                     <button data-setting="viewMode" data-value="scroll" class="flex-1 p-2 text-sm rounded-md transition-colors ${settings.viewMode === 'scroll' ? 'bg-white dark:bg-gray-900 shadow' : ''}">Görgetés</button>
                     <button data-setting="viewMode" data-value="paginated" class="flex-1 p-2 text-sm rounded-md transition-colors ${settings.viewMode === 'paginated' ? 'bg-white dark:bg-gray-900 shadow' : ''}">Lapozás</button>
                 </div>
-                <p class="text-xs text-gray-500 mt-2">A nézet váltásához újra be kell tölteni a könyvet.</p>
+                <p class="text-xs text-gray-500 mt-2">A nézet váltásához újra be kell tölteni a könyvet. Nagy képernyőn a lapozás automatikus.</p>
             </div>
         </div>
     `;
@@ -119,12 +132,6 @@ export function renderReaderControls({ settings, onSettingsChange, toc, onTocSel
             const { setting, value, bg, text } = target.dataset;
             let changes = {};
             switch(setting) {
-                case 'fontSize':
-                    changes = { fontSize: parseFloat(target.value) };
-                    break;
-                case 'fontFamily':
-                     changes = { fontFamily: target.value };
-                    break;
                 case 'textAlign':
                 case 'viewMode':
                 case 'backgroundPattern':
@@ -143,11 +150,13 @@ export function renderReaderControls({ settings, onSettingsChange, toc, onTocSel
 
     container.addEventListener('input', (e) => {
         const target = e.target;
-        if(target.dataset.setting === 'fontSize') {
-            onSettingsChange({ fontSize: parseFloat(target.value) });
+        const setting = target.dataset.setting;
+        if(setting === 'fontSize' || setting === 'paddingX' || setting === 'paddingY') {
+            onSettingsChange({ [setting]: parseFloat(target.value) });
         }
     });
-     container.addEventListener('change', (e) => {
+
+    container.addEventListener('change', (e) => {
         const target = e.target;
         if(target.dataset.setting === 'fontFamily') {
             onSettingsChange({ fontFamily: target.value });

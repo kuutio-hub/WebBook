@@ -65,7 +65,7 @@ export function renderReader(book) {
         'line-height': `${settings.lineHeight} !important`,
         'letter-spacing': `${settings.letterSpacing}em !important`,
         'text-align': `${settings.textAlign} !important`,
-        'padding': '1rem 2rem',
+        'padding': `calc(${settings.paddingY}rem + env(safe-area-inset-top)) calc(${settings.paddingX}rem + env(safe-area-inset-right)) calc(${settings.paddingY}rem + env(safe-area-inset-bottom)) calc(${settings.paddingX}rem + env(safe-area-inset-left))`,
         'word-wrap': 'break-word',
       },
        'a': {
@@ -89,7 +89,7 @@ export function renderReader(book) {
     await saveSettings(settings);
     
     if (isViewModeChanging) {
-      // Re-render the whole reader view
+      // Re-render the whole reader view if view mode changes (from settings panel)
       window.dispatchEvent(new CustomEvent('openBook', { detail: { book } }));
     } else {
       applyTheme();
@@ -102,12 +102,21 @@ export function renderReader(book) {
     header.style.color = settings.textColor;
     
     epubBook = ePub(book.file);
-    rendition = epubBook.renderTo(viewer, {
+
+    const isWideScreen = window.innerWidth >= 1024;
+    // On wide screens, force paginated view for book-like experience.
+    const effectiveViewMode = isWideScreen ? 'paginated' : settings.viewMode;
+
+    const renditionOptions = {
         width: "100%",
         height: "100%",
-        flow: settings.viewMode === 'scroll' ? 'scrolled-doc' : 'paginated',
-        manager: settings.viewMode === 'scroll' ? 'continuous' : 'default',
-    });
+        flow: effectiveViewMode === 'scroll' ? 'scrolled-doc' : 'paginated',
+        manager: effectiveViewMode === 'scroll' ? 'continuous' : 'default',
+        // 'auto' enables two-page spread when container is wide enough
+        spread: isWideScreen ? 'auto' : 'none', 
+    };
+
+    rendition = epubBook.renderTo(viewer, renditionOptions);
     
     rendition.hooks.content.register((contents) => {
       contents.document.body.lang = "hu";
@@ -134,11 +143,15 @@ export function renderReader(book) {
         toc,
         onTocSelect: (href) => rendition.display(href),
     }));
-
-    if (settings.viewMode === 'paginated') {
+    
+    paginationControls.innerHTML = ''; // Clear old controls
+    if (effectiveViewMode === 'paginated') {
+      // In wide-screen book mode, click areas cover half the screen.
+      const prevBtnWidth = isWideScreen ? 'w-1/2' : 'w-1/5';
+      const nextBtnWidth = isWideScreen ? 'w-1/2' : 'w-1/5';
       paginationControls.innerHTML = `
-        <button id="prev-btn" class="absolute left-0 top-0 h-full w-1/5 z-10" aria-label="Previous page"></button>
-        <button id="next-btn" class="absolute right-0 top-0 h-full w-1/5 z-10" aria-label="Next page"></button>
+        <button id="prev-btn" class="absolute left-0 top-0 h-full ${prevBtnWidth} z-10" aria-label="Previous page"></button>
+        <button id="next-btn" class="absolute right-0 top-0 h-full ${nextBtnWidth} z-10" aria-label="Next page"></button>
       `;
       container.querySelector('#prev-btn').addEventListener('click', () => rendition.prev());
       container.querySelector('#next-btn').addEventListener('click', () => rendition.next());
